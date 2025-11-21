@@ -1,0 +1,7 @@
+{
+  "name": "Celine",
+  "description": "A magical, princess-themed gamified reading tracker with AI-powered motivation.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
