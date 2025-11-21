@@ -1,13 +1,19 @@
 import { GoogleGenAI, Chat } from "@google/genai";
 import { Message } from '../types';
 
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const MODEL_NAME = 'gemini-2.5-flash';
+
+// Helper to get the AI instance safely
+const getAI = () => {
+  // In some browser environments (like Vercel deployments without a bundler shim), 
+  // accessing process might throw if not checked, or API_KEY might be missing.
+  const apiKey = process.env.API_KEY || '';
+  return new GoogleGenAI({ apiKey });
+};
 
 export const generateMotivationalMessage = async (mood: string): Promise<string> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
       contents: `Write a very short, encouraging, princess-themed motivational message for a child named Celine who just finished a reading task. 
@@ -24,6 +30,7 @@ export const generateMotivationalMessage = async (mood: string): Promise<string>
 };
 
 export const createHelperChat = () => {
+  const ai = getAI();
   return ai.chats.create({
     model: MODEL_NAME,
     config: {

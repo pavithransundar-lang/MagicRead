@@ -26,7 +26,8 @@ export const ButterflyIcon: React.FC<{
     gold:   { start: '#FDE047', mid: '#EAB308', end: '#A16207', stroke: '#FFFFFF', body: '#713F12', dots: '#FFFFFF' },
   };
 
-  const c = colors[variant];
+  // Safety fallback if variant is invalid
+  const c = colors[variant] || colors['purple'];
 
   return (
     <svg 
@@ -151,7 +152,7 @@ export const CastleIcon: React.FC<{ type: CastleType; className?: string }> = ({
 
   return (
     <svg viewBox="0 0 24 24" className={className} xmlns="http://www.w3.org/2000/svg">
-      {paths[type]}
+      {paths[type] || paths[CastleType.CLASSIC]}
     </svg>
   );
 };

@@ -72,9 +72,13 @@ const StarBackground: React.FC<{ show: boolean }> = React.memo(({ show }) => {
 const App: React.FC = () => {
   // --- State ---
   const [appState, setAppState] = useState<AppState>(() => {
-    const saved = localStorage.getItem('royalQuestState');
-    if (saved) {
-      return JSON.parse(saved);
+    try {
+        const saved = localStorage.getItem('royalQuestState');
+        if (saved) {
+          return JSON.parse(saved);
+        }
+    } catch (e) {
+        console.error("Failed to load save state", e);
     }
     return {
       isSetup: false,
@@ -97,6 +101,13 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('royalQuestState', JSON.stringify(appState));
   }, [appState]);
+  
+  useEffect(() => {
+      // Debug check for deployment issues
+      if (typeof process !== 'undefined' && process.env && !process.env.API_KEY) {
+          console.warn("Warning: API_KEY is missing in environment variables.");
+      }
+  }, []);
 
   // --- Handlers ---
 
