@@ -1,3 +1,4 @@
+
 export enum Mood {
   HAPPY = 'Happy',
   OKAY = 'Okay',
@@ -28,6 +29,7 @@ export interface Achievement {
 
 export interface AppState {
   isSetup: boolean;
+  userName: string;
   mood: Mood | null;
   castle: CastleType | null;
   tokens: number; // 0 to 5

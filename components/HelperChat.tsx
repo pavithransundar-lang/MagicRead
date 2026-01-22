@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Message } from '../types';
 import { createHelperChat, sendHelperMessage } from '../services/geminiService';
@@ -6,13 +7,14 @@ import { Chat } from '@google/genai';
 interface HelperChatProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  userName: string;
 }
 
-const HelperChat: React.FC<HelperChatProps> = ({ isOpen, setIsOpen }) => {
+const HelperChat: React.FC<HelperChatProps> = ({ isOpen, setIsOpen, userName }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
-      text: "Hello Princess Celine! I am your Fairy Godmother. How can I help you with your reading quest today? ✨",
+      text: `Hello Princess ${userName}! I am your Fairy Godmother. How can I help you with your reading quest today? ✨`,
       timestamp: Date.now(),
       sender: 'helper'
     }
@@ -24,9 +26,9 @@ const HelperChat: React.FC<HelperChatProps> = ({ isOpen, setIsOpen }) => {
 
   useEffect(() => {
     if (!chatSessionRef.current) {
-      chatSessionRef.current = createHelperChat();
+      chatSessionRef.current = createHelperChat(userName);
     }
-  }, []);
+  }, [userName]);
 
   useEffect(() => {
     if (isOpen && messagesEndRef.current) {

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import SetupScreen from './components/SetupScreen';
 import QuestBoard from './components/QuestBoard';
@@ -16,14 +17,13 @@ const INITIAL_ACHIEVEMENTS: Achievement[] = [
   { id: 'bookworm', name: 'Royal Bookworm', description: 'Earned 20 total tokens', icon: '📚' },
 ];
 
-// --- Star Background Component ---
 const StarBackground: React.FC<{ show: boolean }> = React.memo(({ show }) => {
   const stars = useMemo(() => {
     return Array.from({ length: 100 }).map((_, i) => ({
       id: i,
       top: Math.random() * 100,
       left: Math.random() * 100,
-      size: Math.random() * 3 + 1, // 1px to 4px
+      size: Math.random() * 3 + 1,
       delay: Math.random() * 5 + 's',
       duration: Math.random() * 3 + 2 + 's'
     }));
@@ -32,8 +32,8 @@ const StarBackground: React.FC<{ show: boolean }> = React.memo(({ show }) => {
   const shootingStars = useMemo(() => {
     return Array.from({ length: 4 }).map((_, i) => ({
         id: `shoot-${i}`,
-        top: Math.random() * 40, // Top 40% of screen
-        left: Math.random() * 50 + 50, // Right half
+        top: Math.random() * 40,
+        left: Math.random() * 50 + 50,
         delay: Math.random() * 15 + 's'
     }));
   }, []);
@@ -70,7 +70,6 @@ const StarBackground: React.FC<{ show: boolean }> = React.memo(({ show }) => {
 });
 
 const App: React.FC = () => {
-  // --- State ---
   const [appState, setAppState] = useState<AppState>(() => {
     try {
         const saved = localStorage.getItem('royalQuestState');
@@ -82,6 +81,7 @@ const App: React.FC = () => {
     }
     return {
       isSetup: false,
+      userName: '',
       mood: null,
       castle: null,
       tokens: 0,
@@ -97,27 +97,24 @@ const App: React.FC = () => {
   const [showJournal, setShowJournal] = useState(false);
   const [loadingMotivation, setLoadingMotivation] = useState(false);
 
-  // --- Effects ---
   useEffect(() => {
     localStorage.setItem('royalQuestState', JSON.stringify(appState));
   }, [appState]);
   
   useEffect(() => {
-      // Debug check for deployment issues
       if (typeof process !== 'undefined' && process.env && !process.env.API_KEY) {
           console.warn("Warning: API_KEY is missing in environment variables.");
       }
   }, []);
 
-  // --- Handlers ---
-
-  const handleSetupComplete = (mood: Mood, castle: CastleType) => {
+  const handleSetupComplete = (name: string, mood: Mood, castle: CastleType) => {
     setAppState(prev => ({
       ...prev,
       isSetup: true,
+      userName: name,
       mood,
       castle,
-      tokens: 0 // Reset tokens on new setup/day
+      tokens: 0
     }));
   };
 
@@ -128,17 +125,15 @@ const App: React.FC = () => {
   const handleButterflyCaught = async () => {
     setShowGame(false);
     
-    // Logic to update tokens and achievements
     let newTokens = appState.tokens + 1;
     let newTotal = appState.totalTokensEarned + 1;
     let newAchievements = [...appState.achievements];
 
-    // Unlock Achievements Logic
     if (newTotal === 1) {
         const idx = newAchievements.findIndex(a => a.id === 'first_flutter');
         if (idx > -1 && !newAchievements[idx].unlockedAt) newAchievements[idx].unlockedAt = Date.now();
     }
-    if (newTokens === 3) { // Bridge is step 2 (0,1,2) - actually 3rd step visual
+    if (newTokens === 3) {
        const idx = newAchievements.findIndex(a => a.id === 'halfway');
        if (idx > -1 && !newAchievements[idx].unlockedAt) newAchievements[idx].unlockedAt = Date.now();
     }
@@ -153,8 +148,7 @@ const App: React.FC = () => {
 
     setLoadingMotivation(true);
     
-    // Get motivation from Gemini
-    const motivationText = await generateMotivationalMessage(appState.mood || 'Happy');
+    const motivationText = await generateMotivationalMessage(appState.userName, appState.mood || 'Happy');
     
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -178,14 +172,14 @@ const App: React.FC = () => {
     setAppState(prev => ({
       ...prev,
       tokens: 0,
-      isSetup: false // Go back to setup to choose new mood/castle
+      isSetup: false
     }));
   };
 
   const getThemeGradient = (castle: CastleType | null) => {
     switch (castle) {
-      case CastleType.FAIRYTALE: return 'bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900'; // Darker night for stars
-      case CastleType.CRYSTAL: return 'bg-gradient-to-br from-indigo-900 via-purple-900 to-fuchsia-900'; // Dark cosmic purple
+      case CastleType.FAIRYTALE: return 'bg-gradient-to-br from-blue-900 via-indigo-800 to-purple-900';
+      case CastleType.CRYSTAL: return 'bg-gradient-to-br from-indigo-900 via-purple-900 to-fuchsia-900';
       case CastleType.FOREST: return 'bg-gradient-to-br from-green-100 via-yellow-50 to-emerald-100';
       case CastleType.CLASSIC:
       default: return 'bg-gradient-to-br from-pink-100 via-white to-purple-100';
@@ -194,9 +188,6 @@ const App: React.FC = () => {
   
   const isNightTheme = appState.castle === CastleType.FAIRYTALE || appState.castle === CastleType.CRYSTAL;
 
-  // --- Render ---
-
-  // 1. Setup Screen
   if (!appState.isSetup) {
     return (
       <div className={`min-h-screen relative transition-colors duration-1000 ${getThemeGradient(null)}`}>
@@ -205,26 +196,22 @@ const App: React.FC = () => {
     );
   }
 
-  // 2. Finale Screen
   if (appState.tokens >= MAX_TOKENS) {
-    return <Finale castle={appState.castle || CastleType.CLASSIC} onReset={handleReset} />;
+    return <Finale userName={appState.userName} castle={appState.castle || CastleType.CLASSIC} onReset={handleReset} />;
   }
 
-  // 3. Main Quest Board
   return (
     <div className={`min-h-screen relative pb-20 transition-colors duration-1000 ${getThemeGradient(appState.castle)}`}>
       
-      {/* Background Overlay for Theme Consistency */}
       <div className="fixed inset-0 -z-20 pointer-events-none" />
-      
-      {/* Dynamic Star Background */}
       <StarBackground show={isNightTheme} />
 
-      {/* Top Nav */}
       <nav className="flex justify-between items-center p-6 relative z-10">
         <div className="flex items-center gap-3 glass-panel px-4 py-2 rounded-full">
             <span className="text-2xl animate-bounce-slow">👑</span>
-            <h1 className="font-handwriting text-2xl font-bold text-purple-900 hidden md:block">Royal Reading Quest</h1>
+            <h1 className="font-handwriting text-2xl font-bold text-purple-900 hidden md:block">
+              {appState.userName}'s Reading Quest
+            </h1>
         </div>
         <button 
             onClick={() => setShowJournal(true)}
@@ -235,7 +222,6 @@ const App: React.FC = () => {
         </button>
       </nav>
 
-      {/* Main Content */}
       <main className="container mx-auto px-4 py-2 relative z-10">
         <QuestBoard 
             tokens={appState.tokens} 
@@ -245,7 +231,6 @@ const App: React.FC = () => {
         />
       </main>
 
-      {/* Loading Indicator for AI */}
       {loadingMotivation && (
           <div className="fixed top-24 left-1/2 transform -translate-x-1/2 glass-panel px-8 py-3 rounded-full shadow-2xl z-50 flex items-center gap-3 animate-pulse border-2 border-pink-200">
               <SparkleIcon className="w-6 h-6 text-yellow-400 animate-spin-slow" />
@@ -253,7 +238,6 @@ const App: React.FC = () => {
           </div>
       )}
 
-      {/* Overlays */}
       {showGame && (
         <ButterflyGame onCatch={handleButterflyCaught} onClose={() => setShowGame(false)} />
       )}
@@ -268,6 +252,7 @@ const App: React.FC = () => {
       <HelperChat 
         isOpen={showChat} 
         setIsOpen={setShowChat} 
+        userName={appState.userName}
       />
 
     </div>

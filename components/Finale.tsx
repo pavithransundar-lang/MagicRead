@@ -1,13 +1,15 @@
+
 import React from 'react';
 import { CastleType } from '../types';
-import { CastleIcon, SparkleIcon } from './Icons';
+import { CastleIcon } from './Icons';
 
 interface FinaleProps {
+  userName: string;
   castle: CastleType;
   onReset: () => void;
 }
 
-const Finale: React.FC<FinaleProps> = ({ castle, onReset }) => {
+const Finale: React.FC<FinaleProps> = ({ userName, castle, onReset }) => {
   const getGradient = () => {
     switch (castle) {
         case CastleType.FAIRYTALE: return 'bg-gradient-to-b from-blue-900 via-blue-700 to-pink-500';
@@ -21,7 +23,7 @@ const Finale: React.FC<FinaleProps> = ({ castle, onReset }) => {
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center relative overflow-hidden text-white ${getGradient()}`}>
       
-      {/* Fireworks / Particles (CSS simplified) */}
+      {/* Fireworks / Particles */}
       {[...Array(20)].map((_, i) => (
         <div 
             key={i}
@@ -41,9 +43,9 @@ const Finale: React.FC<FinaleProps> = ({ castle, onReset }) => {
             <CastleIcon type={castle} className="w-48 h-48 text-white relative z-10 drop-shadow-2xl" />
         </div>
         
-        <h1 className="text-6xl font-handwriting mb-4 text-yellow-300 drop-shadow-md">Quest Complete!</h1>
+        <h1 className="text-6xl font-handwriting mb-4 text-yellow-300 drop-shadow-md">Quest Complete, Princess {userName}!</h1>
         <p className="text-2xl font-light max-w-md mx-auto mb-12">
-            You have reached the {castle} Castle! The kingdom is so proud of your reading.
+            You have reached the {castle} Castle! The kingdom is so proud of your reading journey.
         </p>
         
         <button 

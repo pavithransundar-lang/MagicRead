@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Chat } from "@google/genai";
 import { Message } from '../types';
 
@@ -5,36 +6,34 @@ const MODEL_NAME = 'gemini-2.5-flash';
 
 // Helper to get the AI instance safely
 const getAI = () => {
-  // In some browser environments (like Vercel deployments without a bundler shim), 
-  // accessing process might throw if not checked, or API_KEY might be missing.
   const apiKey = process.env.API_KEY || '';
   return new GoogleGenAI({ apiKey });
 };
 
-export const generateMotivationalMessage = async (mood: string): Promise<string> => {
+export const generateMotivationalMessage = async (name: string, mood: string): Promise<string> => {
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: `Write a very short, encouraging, princess-themed motivational message for a child named Celine who just finished a reading task. 
-      She is feeling ${mood}. 
+      contents: `Write a very short, encouraging, princess-themed motivational message for a child named ${name} who just finished a reading task. 
+      The child is feeling ${mood}. 
       The message must be under 15 words. 
       Do not use quotes. 
-      Example: "You are reading like a true queen, Celine!"`,
+      Example: "You are reading like a true queen, ${name}!"`,
     });
-    return response.text?.trim() || "You are doing great, Princess Celine!";
+    return response.text?.trim() || `You are doing great, Princess ${name}!`;
   } catch (error) {
     console.error("Error generating motivation:", error);
-    return "Keep shining, Princess Celine!";
+    return `Keep shining, Princess ${name}!`;
   }
 };
 
-export const createHelperChat = () => {
+export const createHelperChat = (name: string) => {
   const ai = getAI();
   return ai.chats.create({
     model: MODEL_NAME,
     config: {
-      systemInstruction: `You are a magical Fairy Godmother helper for a young girl named Celine. 
+      systemInstruction: `You are a magical Fairy Godmother helper for a young girl named ${name}. 
       Your tone is warm, encouraging, magical, and simple. 
       Use emojis like ✨, 🦋, 👑. 
       Keep responses short (under 2 sentences) and easy to read.`,

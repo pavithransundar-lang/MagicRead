@@ -1,18 +1,22 @@
+
 import React from 'react';
 import { Mood, CastleType } from '../types';
 import { CastleIcon } from './Icons';
 
 interface SetupScreenProps {
-  onComplete: (mood: Mood, castle: CastleType) => void;
+  onComplete: (name: string, mood: Mood, castle: CastleType) => void;
 }
 
 const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
+  const [name, setName] = React.useState('');
   const [mood, setMood] = React.useState<Mood | null>(null);
   const [castle, setCastle] = React.useState<CastleType | null>(null);
 
+  const isReady = name.trim().length > 0 && mood && castle;
+
   const handleStart = () => {
-    if (mood && castle) {
-      onComplete(mood, castle);
+    if (isReady) {
+      onComplete(name.trim(), mood!, castle!);
     }
   };
 
@@ -29,16 +33,16 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
             Royal Reading Quest
           </h1>
           <p className="text-lg text-slate-600 font-light leading-relaxed">
-            Welcome, Princess Celine! <br/>
+            Welcome, Princess {name || '...'}! <br/>
             Every book you read adds magic to our kingdom. Let's prepare for your journey today.
           </p>
 
           <div className="hidden md:block pt-8">
              <button
                 onClick={handleStart}
-                disabled={!mood || !castle}
+                disabled={!isReady}
                 className={`w-full py-5 rounded-2xl text-2xl font-bold shadow-xl transition-all transform duration-300 ${
-                  mood && castle
+                  isReady
                     ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:scale-105 hover:shadow-pink-400/50 cursor-pointer'
                     : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
@@ -51,9 +55,21 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
         {/* Right Column: Selections */}
         <div className="flex-1 w-full space-y-10">
           
+          {/* Name Section */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-handwriting text-purple-800">1. What is your Royal Name?</h2>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name..."
+              className="w-full p-4 rounded-2xl border-2 border-slate-100 bg-white/50 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all text-xl font-handwriting text-pink-700"
+            />
+          </div>
+
           {/* Mood Section */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-handwriting text-purple-800">1. How are you feeling?</h2>
+            <h2 className="text-2xl font-handwriting text-purple-800">2. How are you feeling?</h2>
             <div className="flex justify-center md:justify-start gap-4">
               {[
                 { type: Mood.HAPPY, emoji: '😊', label: 'Happy', color: 'bg-yellow-100 border-yellow-300 text-yellow-700' },
@@ -78,7 +94,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
 
           {/* Castle Section */}
           <div className="space-y-4">
-             <h2 className="text-2xl font-handwriting text-purple-800">2. Choose your Castle</h2>
+             <h2 className="text-2xl font-handwriting text-purple-800">3. Choose your Castle</h2>
              <div className="grid grid-cols-2 gap-3">
                 {Object.values(CastleType).map((c) => (
                   <button
@@ -108,9 +124,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({ onComplete }) => {
           <div className="block md:hidden pt-4">
              <button
                 onClick={handleStart}
-                disabled={!mood || !castle}
+                disabled={!isReady}
                 className={`w-full py-4 rounded-xl text-xl font-bold shadow-lg transition-all ${
-                  mood && castle
+                  isReady
                     ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white'
                     : 'bg-gray-200 text-gray-400'
                 }`}
